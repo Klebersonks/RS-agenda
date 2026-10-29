@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda SR - Tranças Nagô</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ANIMATION SPLASH SCREEN -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <img src="logo.jpg" alt="Logo Silvia Reis" class="splash-logo">
+            <h1 class="splash-title">Bem-vinda, Silvia!</h1>
+            <p class="splash-subtitle">Agenda SR - Tranças Nagô</p>
+        </div>
+    </div>
+
+    <!-- CABEÇALHO -->
+    <header>
+        <div class="header-container">
+            <div class="header-titles">
+                <div class="logo-title">Agenda SR</div>
+                <p class="subtitle">Atendimento & Marcações - Tranças Nagô</p>
+            </div>
+            <img src="logo.jpg" alt="Logo Silvia Reis" class="header-logo">
+        </div>
+
+        <nav>
+            <button class="btn" onclick="showTab('agendamentos')">Agendamentos</button>
+            <button class="btn btn-primary-highlight" onclick="abrirModalAgendamento()">+ Novo Agendamento</button>
+            <button class="btn" onclick="showTab('calendario')">Calendário & Feriados</button>
+            <button class="btn" onclick="showTab('clientes')">Histórico de Atendimentos</button>
+            <button class="btn" onclick="showTab('configuracoes')">Configurações</button>
+            <button class="btn btn-outline" onclick="toggleDarkMode()">Modo Escuro</button>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- ABA AGENDAMENTOS -->
+        <div id="agendamentos" class="tab-content active">
+            <div class="card">
+                <h2>Lista de Agendamentos Ativos</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Cliente</th>
+                                <th>Telefone</th>
+                                <th>Trança</th>
+                                <th>Valor</th>
+                                <th>Prioridade</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-agendamentos">
+                            <!-- Preenchido via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA CALENDÁRIO -->
+        <div id="calendario" class="tab-content">
+            <div class="card calendar-card">
+                <div class="calendar-header">
+                    <button class="btn btn-sm" onclick="mudarMês(-1)">&lt; Anterior</button>
+                    <h2 id="calendar-month-year">Mês Ano</h2>
+                    <button class="btn btn-sm" onclick="mudarMês(1)">Próximo &gt;</button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Dom</div>
+                    <div class="calendar-day-header">Seg</div>
+                    <div class="calendar-day-header">Ter</div>
+                    <div class="calendar-day-header">Qua</div>
+                    <div class="calendar-day-header">Qui</div>
+                    <div class="calendar-day-header">Sex</div>
+                    <div class="calendar-day-header">Sáb</div>
+                </div>
+                <div class="calendar-grid grid-margin" id="calendar-days"></div>
+            </div>
+        </div>
+
+        <!-- ABA HISTÓRICO DE CLIENTES -->
+        <div id="clientes" class="tab-content">
+            <div class="card">
+                <h2>Histórico de Atendimentos & Avaliações</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Cliente</th>
+                                <th>Trança</th>
+                                <th>Status</th>
+                                <th>Avaliação</th>
+                                <th>Observações do Atendimento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-clientes-hist">
+                            <!-- Preenchido via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA CONFIGURAÇÕES -->
+        <div id="configuracoes" class="tab-content">
+            <div class="card">
+                <h2>Gerenciar Tranças e Preços</h2>
+                <form id="form-add-tranca" onsubmit="adicionarTranca(event)">
+                    <div class="form-group">
+                        <label>Nome do Estilo de Trança:</label>
+                        <input type="text" id="novo-tranca-nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Preço (R$):</label>
+                        <input type="number" id="novo-tranca-preco" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn">Adicionar Novo Estilo</button>
+                </form>
+
+                <h3 class="section-title">Tabela de Preços Atual</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome da Trança</th>
+                                <th>Preço (R$)</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-trancas-config">
+                            <!-- Preenchido via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE NOVO AGENDAMENTO -->
+    <div id="modal-agendamento" class="modal">
+        <div class="modal-content card-decorated">
+            <span class="close-modal" onclick="fecharModalAgendamento()">&times;</span>
+            <div class="modal-header">
+                <h2>Novo Agendamento</h2>
+                <p>Preencha os dados abaixo para agendar um horário</p>
+            </div>
+
+            <form id="form-agendar" onsubmit="salvarAgendamento(event)">
+                <div class="toggle-container">
+                    <span>Nova Cliente</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-tipo-cliente" onchange="alternarTipoClienteToggle()">
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Cliente Existente</span>
+                </div>
+
+                <div class="form-group" id="group-cliente-existente" style="display: none;">
+                    <label>Selecionar Cliente:</label>
+                    <select id="select-cliente-existente" onchange="verificarAlertaClienteExistente()">
+                        <option value="">-- Selecione uma cliente --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="group-cliente-novo">
+                    <label>Nome da Cliente:</label>
+                    <input type="text" id="nome-cliente" placeholder="Digite o nome completo" required>
+                </div>
+
+                <div id="alerta-cliente" class="alert-box"></div>
+
+                <div class="form-group space-top">
+                    <label>Telefone (WhatsApp):</label>
+                    <input type="tel" id="telefone-cliente" placeholder="Ex: 11999998888" required>
+                </div>
+
+                <div class="form-group">
+                    <label>E-mail para confirmação:</label>
+                    <input type="email" id="email-cliente" placeholder="cliente@exemplo.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Trança:</label>
+                    <select id="tranca-select" required>
+                        <!-- Preenchido dinamicamente -->
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label>Data:</label>
+                        <input type="date" id="data-agendamento" required>
+                    </div>
+                    <div class="form-group col">
+                        <label>Horário:</label>
+                        <input type="time" id="hora-agendamento" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Prioridade:</label>
+                    <select id="prioridade-select">
+                        <option value="1">Prioritário</option>
+                        <option value="2" selected>Comum</option>
+                        <option value="3">Desurgente</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-full btn-decorated">Confirmar Agendamento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE FINALIZAR / AVALIAR ATENDIMENTO -->
+    <div id="modal-finalizar" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="fecharModalFinalizar()">&times;</span>
+            <h2>Finalizar Atendimento</h2>
+            <p id="subtitulo-finalizar"></p>
+            
+            <form id="form-finalizar" onsubmit="confirmarFinalizacao(event)">
+                <input type="hidden" id="finalizar-id">
+                <input type="hidden" id="finalizar-status">
+
+                <div class="form-group">
+                    <label>Avaliação da Cliente:</label>
+                    <div class="star-rating-input">
+                        <input type="radio" id="star5" name="star-rating" value="5" checked /><label for="star5" title="5 estrelas">★</label>
+                        <input type="radio" id="star4" name="star-rating" value="4" /><label for="star4" title="4 estrelas">★</label>
+                        <input type="radio" id="star3" name="star-rating" value="3" /><label for="star3" title="3 estrelas">★</label>
+                        <input type="radio" id="star2" name="star-rating" value="2" /><label for="star2" title="2 estrelas">★</label>
+                        <input type="radio" id="star1" name="star-rating" value="1" /><label for="star1" title="1 estrela">★</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observações do Atendimento:</label>
+                    <textarea id="finalizar-obs" rows="3" placeholder="Ex: Chegou no horário, solicitou trança bem apertada..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-full">Salvar no Histórico e Fechar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- RODAPÉ -->
+    <footer>
+        <div class="footer-container">
+            <p class="footer-location">📍 Localização: Rua Getúlio Rodrigues Ramos, nº 145 - Delfim Moreira</p>
+            <p class="footer-credits">Desenvolvido por <strong>Kleberson Kaio</strong></p>
+            <p class="footer-copy">&copy; 2026 Silvia Reis Tranças Nagô. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        emailjs.init({
+            publicKey: 'cJkWVR336wwhaUE8A'
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
